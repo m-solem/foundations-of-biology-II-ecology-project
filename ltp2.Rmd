@@ -1,0 +1,289 @@
+---
+title: "ltp2"
+author: "Melissa Solem"
+date: "2022-11-27"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# setup
+```{r}
+#loading package
+library(car)
+
+#loading data
+data <- read.csv("biome-specific data for pr4 - data.csv")
+attach(data)
+
+#forming models
+simple.model <- lm(pct.furious ~ 1, data = data)
+complex.model <- lm(pct.furious ~ 1 + temp + precip + flood, data = data)
+summary(complex.model)
+```
+
+# finding best model
+```{r}
+# backward stepwise selecion with AIC
+step(complex.model, scope = list(lower = simple.model, upper = complex.model), direction = 'backward', k = 2)
+```
+
+# multi-collinearity check
+```{r}
+# did not compute as only one variable was found to be significant
+```
+
+
+# checking models with f-test
+```{r}
+c.model <- lm(pct.furious ~ 1 + temp, data = data)
+s.model <- lm(pct.furious ~ 1, data = data)
+anova(s.model, c.model)
+summary(c.model)
+```
+
+# forming model
+```{r}
+# loading necessary package
+library(ggplot2)
+
+# create regression plot
+ggplot(data = data,aes(temp, pct.furious)) +
+  geom_point() +
+  geom_smooth(method='lm', color='green3') +
+  labs(x='Average Environmental Temperature (°C)', y='% with Furious Symptoms', title='Rabid Raccoons') +
+  theme(plot.title = element_text(hjust=0.5, size=18, face='bold')) 
+```
+
+## models for each biome
+due to the low number of observations per biome type, these models have not been vetted to a high degree.
+```{r}
+# splitting data by biome type
+split.data <- split(data, data$biome.type)
+```
+
+desert:
+```{r}
+# desert
+
+#forming models
+simple.model.desert <- lm(pct.furious ~ 1, data = split.data$desert)
+complex.model.desert <- lm(pct.furious ~ 1 + temp + precip, data = split.data$desert) #removed flood as variable because all locations had no flood
+summary(complex.model.desert)
+
+# backward stepwise selecion with AIC
+step(complex.model.desert, scope = list(lower = simple.model.desert, upper = complex.model.desert), direction = 'backward', k = 2)
+
+# f-test
+c.model.desert <- lm(pct.furious ~ 1 + temp, data = split.data$desert)
+s.model.desert <- lm(pct.furious ~ 1, data = split.data$desert)
+anova(s.model.desert, c.model.desert)
+summary(c.model.desert)
+
+# desert model: pct.furious = 35.243 + 1.546(temp)
+# (multiple) r-squared = 0.7383
+```
+
+temperate broadleaf forests:
+```{r}
+# temperate broadleaf forests
+
+#forming models
+simple.model.t.broadleaf <- lm(pct.furious ~ 1, data = split.data$t.broadleaf)
+complex.model.t.broadleaf <- lm(pct.furious ~ 1 + temp + precip + flood, data = split.data$t.broadleaf) 
+summary(complex.model.t.broadleaf)
+
+# backward stepwise selecion with AIC
+step(complex.model.t.broadleaf, scope = list(lower = simple.model.t.broadleaf, upper = complex.model.t.broadleaf), direction = 'backward', k = 2)
+
+# f-test
+c.model.t.broadleaf <- lm(pct.furious ~ 1 + temp, data = split.data$t.broadleaf)
+s.model.t.broadleaf <- lm(pct.furious ~ 1, data = split.data$t.broadleaf)
+anova(s.model.t.broadleaf, c.model.t.broadleaf)
+summary(c.model.t.broadleaf)
+
+# t.broadleaf model: pct.furious = 37.2317 + 1.3656(temp)
+# (multiple) r-squared = 0.9718
+```
+
+temperate conifer forests:
+```{r}
+# temperate conifer forests
+
+#forming models
+simple.model.t.conifer <- lm(pct.furious ~ 1, data = split.data$t.conifer)
+complex.model.t.conifer <- lm(pct.furious ~ 1 + temp + precip + flood, data = split.data$t.conifer) #removed flood as variable because all locations had no flood
+summary(complex.model.t.conifer)
+
+# backward stepwise selecion with AIC
+step(complex.model.t.conifer, scope = list(lower = simple.model.t.conifer, upper = complex.model.t.conifer), direction = 'backward', k = 2)
+
+# f-test
+c.model.t.conifer <- lm(pct.furious ~ 1 + temp + precip, data = split.data$t.conifer)
+s.model.t.conifer <- lm(pct.furious ~ 1, data = split.data$t.conifer)
+anova(s.model.t.conifer, c.model.t.conifer)
+summary(c.model.t.conifer)
+#showed no significant improvement over s.model. will try 1 + temp model and see if that shows a significantly better fit
+
+# f-test
+c.model.t.conifer <- lm(pct.furious ~ 1 + temp, data = split.data$t.conifer)
+s.model.t.conifer <- lm(pct.furious ~ 1, data = split.data$t.conifer)
+anova(s.model.t.conifer, c.model.t.conifer)
+summary(c.model.t.conifer)
+
+# t.conifer model: pct.furious = 37.4571 + 1.3902(temp)
+# (multiple) r-squared = 0.9027
+```
+
+temperate grassland
+```{r}
+# temperate grassland
+
+#forming models
+simple.model.t.grassland <- lm(pct.furious ~ 1, data = split.data$t.grassland)
+complex.model.t.grassland <- lm(pct.furious ~ 1 + temp + precip, data = split.data$t.grassland) #removed flood as variable because all locations had no flood
+summary(complex.model.t.grassland)
+
+# backward stepwise selecion with AIC
+# step(complex.model.t.grassland, scope = list(lower = simple.model.t.grassland, upper = complex.model.t.grassland), direction = 'backward', k = 2)
+  # returning negative infinity AIC. more data is required to create a reliable model.
+
+# insufficient data to create model
+```
+
+taiga
+```{r}
+# taiga
+
+#forming models
+simple.model.taiga <- lm(pct.furious ~ 1, data = split.data$taiga)
+complex.model.taiga <- lm(pct.furious ~ 1 + temp + precip + flood, data = split.data$taiga)
+summary(complex.model.taiga)
+
+# backward stepwise selecion with AIC
+step(complex.model.taiga, scope = list(lower = simple.model.taiga, upper = complex.model.taiga), direction = 'backward', k = 2)
+
+# f-test
+c.model.taiga <- lm(pct.furious ~ 1 + temp, data = split.data$taiga)
+s.model.taiga <- lm(pct.furious ~ 1, data = split.data$taiga)
+anova(s.model.taiga, c.model.taiga)
+summary(c.model.taiga)
+
+# taiga model: pct.furious = 39.037 + 1.795(temp)
+# (multiple) r-squared = 0.426
+# the f-test between pct.furious ~ 1 + temp and the intercept only model yields a p-value of 0.2325, indicating that the pct.furious ~ 1 + temp model does not fit the data significantly better than the intercept-only model. There is insufficient data collected to form a reliable model.
+```
+
+tropical broadleaf forest
+```{r}
+# tropical broadleaf 
+
+#forming models
+simple.model.tr.broadleaf <- lm(pct.furious ~ 1, data = split.data$tr.broadleaf )
+complex.model.tr.broadleaf  <- lm(pct.furious ~ 1 + temp + precip + flood, data = split.data$tr.broadleaf)
+summary(complex.model.tr.broadleaf)
+
+# backward stepwise selection with AIC
+step(complex.model.tr.broadleaf, scope = list(lower = simple.model.tr.broadleaf, upper = complex.model.tr.broadleaf), direction = 'backward', k = 2)
+
+# f-test
+c.model.tr.broadleaf <- lm(pct.furious ~ 1 + temp + precip, data = split.data$tr.broadleaf)
+s.model.tr.broadleaf <- lm(pct.furious ~ 1, data = split.data$tr.broadleaf)
+anova(s.model.tr.broadleaf, c.model.tr.broadleaf)
+summary(c.model.tr.broadleaf)
+# the complicated model did not fit the data significantly better than the intercept only model. will test pct.furious ~ 1 + temp to see if this fits data significantly better.
+
+# f-test
+c.model.tr.broadleaf <- lm(pct.furious ~ 1 + temp, data = split.data$tr.broadleaf)
+s.model.tr.broadleaf <- lm(pct.furious ~ 1, data = split.data$tr.broadleaf)
+anova(s.model.tr.broadleaf, c.model.tr.broadleaf)
+summary(c.model.tr.broadleaf)
+
+# the f-test between pct.furious ~ 1 + temp and the intercept only model yields a p-value of 0.1725, indicating that the pct.furious ~ 1 + temp model does not fit the data significantly better than the intercept-only model. There is insufficient data collected to form a reliable model.
+```
+
+tropical conifer
+```{r}
+# tropical conifer
+
+#forming models
+simple.model.t.conifer <- lm(pct.furious ~ 1, data = split.data$t.conifer)
+complex.model.t.conifer <- lm(pct.furious ~ 1 + temp + precip + flood, data = split.data$t.conifer)
+summary(complex.model.t.conifer)
+
+# backward stepwise selecion with AIC
+step(complex.model.t.conifer, scope = list(lower = simple.model.t.conifer, upper = complex.model.t.conifer), direction = 'backward', k = 2)
+
+# collinearity check
+cc.model <- lm(pct.furious ~ 1 + temp + precip, data = split.data$t.conifer)
+pairs(pct.furious ~ 1 + temp + precip, data = split.data$t.conifer)
+vif(cc.model)
+# no collinearity observed
+
+# f-test
+c.model.t.conifer <- lm(pct.furious ~ 1 + temp + precip, data = split.data$t.conifer)
+s.model.t.conifer <- lm(pct.furious ~ 1, data = split.data$t.conifer)
+anova(s.model.t.conifer, c.model.t.conifer)
+summary(c.model.t.conifer)
+
+# although the p-value of the f-test (0.05204) was above the significance level, it was near significant and will thus be included in the report.
+# t.conifer model: pct.furious = 39.18569 + 1.69875(temp) - 0.06962(precip)
+# (multiple) r-squared = 0.948
+```
+
+tundra
+```{r}
+# tundra
+
+#forming models
+simple.model.tundra <- lm(pct.furious ~ 1, data = split.data$tundra)
+complex.model.tundra <- lm(pct.furious ~ 1 + temp + precip, data = split.data$tundra) #flood variable removed because no floods were observed in any observation
+summary(complex.model.tundra)
+
+# backward stepwise selecion with AIC
+step(complex.model.tundra, scope = list(lower = simple.model.tundra, upper = complex.model.tundra), direction = 'backward', k = 2)
+
+# f-test
+c.model.tundra <- lm(pct.furious ~ 1 + precip, data = split.data$tundra)
+s.model.tundra <- lm(pct.furious ~ 1, data = split.data$tundra)
+anova(s.model.tundra, c.model.tundra)
+summary(c.model.tundra)
+
+# tundra model: pct.furious = 25.85542 + 0.24069(precip)
+# (multiple) r-squared = 0.9713
+```
+
+# creating model with all plots
+
+tropical conifer can't be plotted
+```{r}
+# create regression plot
+ggplot(data = data,aes(temp, pct.furious, color = biome.type)) +
+  geom_point() +
+  scale_color_manual(name = 'Biome', 
+    breaks = c('General', 'desert', 't.broadleaf', 't.conifer', 'tr.broadleaf'), 
+    values = c('General' = 'black', "desert" = 'springgreen4', "t.broadleaf" = 'palegreen3', "t.conifer" = 'dodgerblue2', "tr.broadleaf" = 'skyblue3')) +
+  geom_smooth(method='lm', aes(color='General')) +
+  geom_smooth(data = split.data$desert, method='lm', aes(color='desert')) +
+  geom_smooth(data = split.data$t.broadleaf, method='lm', aes(color='t.broadleaf')) +
+  geom_smooth(data = split.data$t.conifer, method='lm', aes(color='t.conifer')) +
+  geom_smooth(data = split.data$tr.broadleaf, method='lm', aes(color='tr.broadleaf')) +
+  labs(x='Average Environmental Temperature (degrees C)', y='% with Furious Symptoms', title='Rabid Raccoons') +
+  theme(plot.title = element_text(hjust=0.5, size=18, face='bold'))
+```
+
+
+# Tundra plot
+```{r}
+# create regression plot
+ggplot(data = split.data$tundra,aes(precip, pct.furious)) +
+  geom_point() +
+  geom_smooth(method='lm', color='blue') +
+  labs(x='Average Monthly Precipitation (mm)', y='% with Furious Symptoms', title='Rabid Raccoons in Tundra Biome') +
+  theme(plot.title = element_text(hjust=0.5, size=18, face='bold'))
+```
+
